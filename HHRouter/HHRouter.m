@@ -28,6 +28,9 @@
 @property (strong, nonatomic) NSMutableDictionary *paramKeys;
 @end
 
+NSString *const TFParameterUserInfo = @"TFParameterUserInfo";
+
+
 @implementation HHRouter
 
 + (instancetype)shared
@@ -64,18 +67,19 @@
     return viewController;
 }
 
-- (UIViewController *)matchController:(NSString *)route customParams:(NSDictionary *)customParams
+- (UIViewController *)matchController:(NSString *)route toBlock:(HHRouterBlock)block;
 {
-    NSDictionary *params = [self paramsInRoute:route];
+    NSMutableDictionary *params = [self paramsInRoute:route];
     Class controllerClass = params[@"controller_class"];
-    
+    if (block) {
+        //传入自定义参数
+        params[TFParameterUserInfo] = [block copy];
+    }
     UIViewController *viewController = [[controllerClass alloc] init];
     
     if ([viewController respondsToSelector:@selector(setParams:)]) {
-        NSMutableDictionary *entry = [NSMutableDictionary dictionaryWithDictionary:customParams];
-        [entry addEntriesFromDictionary:params];
         [viewController performSelector:@selector(setParams:)
-                             withObject:[entry copy]];
+                             withObject:[params copy]];
     }
     return viewController;
 }
@@ -118,7 +122,7 @@
 }
 
 // extract params in a route
-- (NSDictionary *)paramsInRoute:(NSString *)route
+- (NSMutableDictionary *)paramsInRoute:(NSString *)route
 {
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
     
@@ -173,8 +177,10 @@
             params[@"block"] = [subRoutes[@"_"] copy];
         }
     }
+    //默认userinfo为空
+    params[TFParameterUserInfo] = @{};
     
-    return [NSDictionary dictionaryWithDictionary:params];
+    return params;
 }
 
 #pragma mark - Private
