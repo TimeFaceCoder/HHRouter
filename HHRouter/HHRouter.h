@@ -44,7 +44,7 @@ extern NSString *const TFParameterUserInfo;
 - (void)mapWith:(NSDictionary *)param toControllerClass:(Class)controllerClass;
 - (UIViewController *)match:(NSString *)route __attribute__((deprecated));
 - (UIViewController *)matchController:(NSString *)route;
-- (UIViewController *)matchController:(NSString *)route toBlock:(HHRouterBlock)block;
+- (UIViewController *)matchController:(NSString *)route userInfo:(NSDictionary *)userInfo;
 
 - (void)map:(NSString *)route toBlock:(HHRouterBlock)block;
 - (HHRouterBlock)matchBlock:(NSString *)route;

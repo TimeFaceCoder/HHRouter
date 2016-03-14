@@ -67,13 +67,13 @@ NSString *const TFParameterUserInfo = @"TFParameterUserInfo";
     return viewController;
 }
 
-- (UIViewController *)matchController:(NSString *)route toBlock:(HHRouterBlock)block;
+- (UIViewController *)matchController:(NSString *)route userInfo:(NSDictionary *)userInfo;
 {
     NSMutableDictionary *params = [self paramsInRoute:route];
     Class controllerClass = params[@"controller_class"];
-    if (block) {
+    if (userInfo) {
         //传入自定义参数
-        params[TFParameterUserInfo] = [block copy];
+        params[TFParameterUserInfo] = [userInfo copy];
     }
     UIViewController *viewController = [[controllerClass alloc] init];
     

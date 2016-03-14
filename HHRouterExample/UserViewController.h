@@ -10,4 +10,6 @@
 
 @interface UserViewController : UIViewController
 
+@property (nonatomic ,strong) NSDictionary *params;
+
 @end

@@ -8,14 +8,21 @@
 
 #import "AppDelegate.h"
 #import "HHRouter.h"
+#import "UserViewController.h"
+#import "StoryListViewController.h"
+#import "StoryViewController.h"
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [[HHRouter shared] map:@"storyView" toControllerClass:[StoryViewController class]];
+    
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor whiteColor];
-    self.window.rootViewController = [[UIViewController alloc] init];
+    self.window.rootViewController = [[UserViewController alloc] init];
+    
+    
     [self.window makeKeyAndVisible];
     return YES;
 }

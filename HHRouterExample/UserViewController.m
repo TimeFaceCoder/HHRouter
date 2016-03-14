@@ -7,6 +7,7 @@
 //
 
 #import "UserViewController.h"
+#import "HHRouter.h"
 
 @interface UserViewController ()
 
@@ -26,7 +27,9 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view.
+    // Do any additional setup after loading the view.
+    UIViewController *viewController = [[HHRouter shared] matchController:@"storyView" userInfo:@{@"userId":@"121212"}];
+    NSLog(@"params:%@",[viewController.params objectForKey:TFParameterUserInfo]);
 }
 
 - (void)didReceiveMemoryWarning
