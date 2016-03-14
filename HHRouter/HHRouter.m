@@ -25,6 +25,7 @@
 
 @interface HHRouter ()
 @property (strong, nonatomic) NSMutableDictionary *routes;
+@property (strong, nonatomic) NSMutableDictionary *paramKeys;
 @end
 
 @implementation HHRouter
@@ -33,7 +34,7 @@
 {
     static HHRouter *router = nil;
     static dispatch_once_t onceToken;
-
+    
     dispatch_once(&onceToken, ^{
         if (!router) {
             router = [[self alloc] init];
@@ -45,7 +46,7 @@
 - (void)map:(NSString *)route toBlock:(HHRouterBlock)block
 {
     NSMutableDictionary *subRoutes = [self subRoutesToRoute:route];
-
+    
     subRoutes[@"_"] = [block copy];
 }
 
@@ -53,12 +54,28 @@
 {
     NSDictionary *params = [self paramsInRoute:route];
     Class controllerClass = params[@"controller_class"];
-
+    
     UIViewController *viewController = [[controllerClass alloc] init];
-
+    
     if ([viewController respondsToSelector:@selector(setParams:)]) {
         [viewController performSelector:@selector(setParams:)
                              withObject:[params copy]];
+    }
+    return viewController;
+}
+
+- (UIViewController *)matchController:(NSString *)route customParams:(NSDictionary *)customParams
+{
+    NSDictionary *params = [self paramsInRoute:route];
+    Class controllerClass = params[@"controller_class"];
+    
+    UIViewController *viewController = [[controllerClass alloc] init];
+    
+    if ([viewController respondsToSelector:@selector(setParams:)]) {
+        NSMutableDictionary *entry = [NSMutableDictionary dictionaryWithDictionary:customParams];
+        [entry addEntriesFromDictionary:params];
+        [viewController performSelector:@selector(setParams:)
+                             withObject:[entry copy]];
     }
     return viewController;
 }
@@ -73,7 +90,7 @@
     NSDictionary *params = [self paramsInRoute:route];
     
     if (!params){
-    return nil;
+        return nil;
     }
     
     HHRouterBlock routerBlock = [params[@"block"] copy];
@@ -93,7 +110,7 @@
 {
     NSDictionary *params = [self paramsInRoute:route];
     HHRouterBlock routerBlock = [params[@"block"] copy];
-
+    
     if (routerBlock) {
         return routerBlock([params copy]);
     }
@@ -104,9 +121,9 @@
 - (NSDictionary *)paramsInRoute:(NSString *)route
 {
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
-
+    
     params[@"route"] = [self stringFromFilterAppUrlScheme:route];
-
+    
     NSMutableDictionary *subRoutes = self.routes;
     NSArray *pathComponents = [self pathComponentsFromRoute:[self stringFromFilterAppUrlScheme:route]];
     for (NSString *pathComponent in pathComponents) {
@@ -128,7 +145,7 @@
             return nil;
         }
     }
-
+    
     // Extract Params From Query.
     NSRange firstRange = [route rangeOfString:@"?"];
     if (firstRange.location != NSNotFound && route.length > firstRange.location + firstRange.length) {
@@ -156,7 +173,7 @@
             params[@"block"] = [subRoutes[@"_"] copy];
         }
     }
-
+    
     return [NSDictionary dictionaryWithDictionary:params];
 }
 
@@ -169,6 +186,14 @@
     }
     
     return _routes;
+}
+
+- (NSMutableDictionary *)paramKeys
+{
+    if (!_paramKeys) {
+        _paramKeys = [[NSMutableDictionary alloc] init];
+    }
+    return _paramKeys;
 }
 
 - (NSArray *)pathComponentsFromRoute:(NSString *)route
@@ -191,31 +216,31 @@
             return [string substringFromIndex:appUrlScheme.length + 2];
         }
     }
-
+    
     return string;
 }
 
 - (NSArray *)appUrlSchemes
 {
     NSMutableArray *appUrlSchemes = [NSMutableArray array];
-
+    
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-
+    
     for (NSDictionary *dic in infoDictionary[@"CFBundleURLTypes"]) {
         NSString *appUrlScheme = dic[@"CFBundleURLSchemes"][0];
         [appUrlSchemes addObject:appUrlScheme];
     }
-
+    
     return [appUrlSchemes copy];
 }
 
 - (NSMutableDictionary *)subRoutesToRoute:(NSString *)route
 {
     NSArray *pathComponents = [self pathComponentsFromRoute:route];
-
+    
     NSInteger index = 0;
     NSMutableDictionary *subRoutes = self.routes;
-
+    
     while (index < pathComponents.count) {
         NSString *pathComponent = pathComponents[index];
         if (![subRoutes objectForKey:pathComponent]) {
@@ -231,9 +256,15 @@
 - (void)map:(NSString *)route toControllerClass:(Class)controllerClass
 {
     NSMutableDictionary *subRoutes = [self subRoutesToRoute:route];
-
+    
     subRoutes[@"_"] = controllerClass;
 }
+
+- (void)mapWith:(NSDictionary *)param toControllerClass:(Class)controllerClass
+{
+    
+}
+
 
 - (HHRouteType)canRoute:(NSString *)route
 {

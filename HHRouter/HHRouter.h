@@ -39,8 +39,10 @@ typedef id (^HHRouterBlock)(NSDictionary *params);
 + (instancetype)shared;
 
 - (void)map:(NSString *)route toControllerClass:(Class)controllerClass;
+- (void)mapWith:(NSDictionary *)param toControllerClass:(Class)controllerClass;
 - (UIViewController *)match:(NSString *)route __attribute__((deprecated));
 - (UIViewController *)matchController:(NSString *)route;
+- (UIViewController *)matchController:(NSString *)route customParams:(NSDictionary *)customParams;
 
 - (void)map:(NSString *)route toBlock:(HHRouterBlock)block;
 - (HHRouterBlock)matchBlock:(NSString *)route;
